@@ -5,6 +5,12 @@
 </p>
 
 <p align="center">
+  <a href="https://filamentphp.com" target="_blank">
+    <img src="https://filamentphp.com/images/logo.svg" width="400" alt="Filament Logo">
+  </a>
+</p>
+
+<p align="center">
   <a href="https://github.com/laravel/framework/actions">
     <img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status">
   </a>
