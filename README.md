@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://filamentphp.com" target="_blank">
-    <img src="https://filamentphp.com/images/logo.svg" width="400" alt="Filament Logo">
+    <img src="https://www.luckymedia.dev/img/blog/why-do-we-use-filamentphp/filament-logo.svg" width="400" alt="Filament Logo">
   </a>
 </p>
 
