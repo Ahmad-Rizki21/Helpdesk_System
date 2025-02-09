@@ -24,6 +24,7 @@ use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\Action;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
+use Filament\Notifications\Notification;
 use App\Exports\TicketBackboneExport;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -203,12 +204,24 @@ TextColumn::make('closed_date_formatted')
         ->actions([
             EditAction::make(),
             ViewAction::make(),
-            DeleteAction::make(),
-            // Action::make('Export')
-            // ->label('Export to Excel')
-            // ->color('success')
-            // ->icon('heroicon-o-arrow-down-tray')
-            // ->action(fn () => Excel::download(new TicketBackboneExport, 'ticket-backbone.xlsx')),
+            DeleteAction::make()
+                ->label('Hapus')
+                ->icon('heroicon-o-trash')
+                ->color('danger')
+                ->requiresConfirmation()
+                ->modalHeading('Hapus Ticket Backbone')
+                ->modalDescription('Apakah Anda yakin ingin menghapus ticket ini?')
+                ->modalButton('Ya, Hapus')
+                ->successNotificationTitle('🚀 Ticket berhasil dihapus!')
+                ->after(function ($record) {
+                    Notification::make()
+                        ->title('🗑️ Ticket Dihapus!')
+                        ->body("Ticket dengan **ID #{$record->id}** telah dihapus oleh **" . Filament::auth()->user()->name . "**.")
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->send();
+                }),
+            
         
             
     ]);

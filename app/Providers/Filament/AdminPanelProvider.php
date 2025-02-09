@@ -33,8 +33,16 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->colors([
                 'primary' => Color::Amber,
+                
             ])
+
+             // 🔹 Tambahkan Branding (Logo & Nama)
+            //  ->brandLogo(asset('images/logo.svg')) // Sesuaikan path logo
+             ->brandLogoHeight('40px') // Sesuaikan ukuran logo
+             ->brandName('FTTH JELANTIK HELPDESK')
             
+            
+
             // 🔥 Tambahkan Resources secara eksplisit
             ->resources([
                 TicketResource::class,

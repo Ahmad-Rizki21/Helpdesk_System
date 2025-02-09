@@ -7,32 +7,32 @@ use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use App\Models\Evidance;
 use Filament\Forms;
+use Filament\Notifications\Notification;
+use Filament\Notifications\Actions\Action;
 
 class EditTicket extends EditRecord
 {
     protected static string $resource = TicketResource::class;
 
     protected function getHeaderActions(): array
-    {
-        return [
-            Actions\DeleteAction::make(),
-        ];
-    }
-
-//     // EditTicket.php
-// protected function mutateFormDataBeforeSave(array $data): array
-// {
-//     if (isset($data['evidance']) && $data['evidance'] instanceof \Illuminate\Http\UploadedFile) {
-//         $filePath = $data['evidance']->store('evidances', 'public');
-//         Evidance::create([
-//             'ticket_id' => $this->record->id,
-//             'file_path' => $filePath,
-//             'file_type' => $data['evidance']->getClientMimeType(),
-//         ]);
-//     }
-
-//     return $data;
-// }
+{
+    return [
+        Actions\DeleteAction::make()
+            ->requiresConfirmation()
+            ->modalHeading('Konfirmasi Hapus Ticket')
+            ->modalDescription('Apakah Anda yakin ingin menghapus ticket ini? Tindakan ini tidak dapat dibatalkan.')
+            ->modalSubmitActionLabel('Ya, Hapus')
+            ->modalCancelActionLabel('Batal')
+            ->successNotificationTitle('🗑️ Ticket Berhasil Dihapus!')
+            ->after(function () {
+                Notification::make()
+                    ->success()
+                    ->title('🗑️ Ticket Telah Dihapus!')
+                    ->body('Ticket ini telah dihapus secara permanen.')
+                    ->send();
+            }),
+    ];
+}
 
     protected function getFormSchema(): array
     {
@@ -120,4 +120,23 @@ class EditTicket extends EditRecord
             ->collapsed(false)
     ];
     }
+
+
+    protected function getSavedNotification(): ?Notification
+{
+    return Notification::make()
+        ->success()
+        ->color('success')
+        ->title('✅ Ticket Berhasil Diperbarui!')
+        ->body('Perubahan pada ticket telah disimpan. Klik tombol di bawah untuk melihat detailnya.')
+        ->actions([
+            Action::make('Lihat Ticket')
+                ->url($this->getResource()::getUrl('edit', ['record' => $this->record]))
+                ->button(),
+        ])
+        ->send();
+}
+
+
+
 }
