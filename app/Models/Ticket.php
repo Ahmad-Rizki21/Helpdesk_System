@@ -25,6 +25,8 @@ class Ticket extends Model
         'description',
         'sla_id',
         'evidance_path',
+        'created_by',  // Pastikan created_by diisi dengan ID user yang sedang login
+
     ];
 
     public function customer()
@@ -45,6 +47,7 @@ class Ticket extends Model
             $lastTicket = self::orderBy('id', 'desc')->first();
             $ticket->no = $lastTicket ? $lastTicket->no + 1 : 1;
             $ticket->ticket_number = 'TFTTH-' . strtoupper(uniqid());
+            $ticket->created_by = \Illuminate\Support\Facades\Auth::id();
         });
 
         static::updating(function ($ticket) {
@@ -56,6 +59,11 @@ class Ticket extends Model
                 }
             }
         });
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function getPendingClockAttribute($value)

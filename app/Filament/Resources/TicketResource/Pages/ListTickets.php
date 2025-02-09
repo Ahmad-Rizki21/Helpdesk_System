@@ -6,7 +6,10 @@ use App\Filament\Resources\TicketResource;
 use App\Filament\Widgets\FooterWidget;
 use Filament\Actions;
 use App\Mail\TicketCreated;
+use Filament\Actions\Action;
 use Illuminate\Support\Facades\Mail;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TicketsExport;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables;
 
@@ -19,7 +22,17 @@ class ListTickets extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+            Actions\Action::make('export')
+                ->label('Ekspor ke Excel')
+                ->color('success')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->action(fn () => $this->exportToExcel()),
         ];
+    }
+
+    public function exportToExcel()
+    {
+        return Excel::download(new TicketsExport, 'laporan_tickets.xlsx');
     }
 
     protected function getTableRowClass($record): string

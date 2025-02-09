@@ -11,16 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('logs', function (Blueprint $table) {
+            Schema::create('backbone_cids', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->string('action');
+            $table->string('cid')->unique();
+            $table->string('lokasi')->nullable(); 
+            $table->enum('jenis_isp', ['INDIBIZ', 'ASTINET', 'ICON PLUS', 'FIBERNET']);
             $table->timestamps();
-            
-            // Foreign key constraint
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
-        
     }
 
     /**
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('logs');
+        Schema::dropIfExists('backbone_cids');
     }
 };

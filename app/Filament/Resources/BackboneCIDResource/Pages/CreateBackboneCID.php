@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Resources\LogResource\Pages;
+namespace App\Filament\Resources\BackboneCIDResource\Pages;
 
-use App\Filament\Resources\LogResource;
+use App\Filament\Resources\BackboneCIDResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Widgets\FooterWidget;
 
-class CreateLog extends CreateRecord
+class CreateBackboneCID extends CreateRecord
 {
-    protected static string $resource = LogResource::class;
+    protected static string $resource = BackboneCIDResource::class;
 
     protected function getFooterWidgets(): array
     {

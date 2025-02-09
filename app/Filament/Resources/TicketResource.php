@@ -15,6 +15,8 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\TicketsExport;
+use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Support\Facades\Auth;
 
 class TicketResource extends Resource
 {
@@ -92,6 +94,10 @@ class TicketResource extends Resource
                 ->label('SLA')
                 ->relationship('sla', 'name')
                 ->required(),
+
+                Forms\Components\Hidden::make('created_by')
+                ->default(fn () => Auth::user()->id) // Simpan user yang sedang login
+                ->disabled(),
         ]);
     }
 
@@ -122,7 +128,23 @@ class TicketResource extends Resource
                     default => 'gray',
                 })->searchable(),
                 Tables\Columns\TextColumn::make('closed_date')->label('Closed Date')->searchable(),
+                Tables\Columns\TextColumn::make('creator.name')
+                ->label('Created By')
+                ->sortable()
+                ->searchable(),
                 ])
+
+                ->filters([
+                    SelectFilter::make('status')
+                        ->label('Filter Status')
+                        ->options([
+                            'OPEN' => 'OPEN',
+                            'PENDING' => 'PENDING',
+                            'CLOSED' => 'CLOSED',
+                        ]),
+                ])
+            
+
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
@@ -132,73 +154,67 @@ class TicketResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ])
-            ->headerActions([
-                Tables\Actions\Action::make('export')
-                    ->label('Ekspor ke Excel')
-                    ->color('success')
-                    ->action(fn () => self::exportToExcel()),
             ]);
     }
 
-    public static function exportToExcel()
-    {
-        return Excel::download(new TicketsExport(), 'laporan_tickets.xlsx');
+    // public static function exportToExcel()
+    // {
+    //     return Excel::download(new TicketsExport(), 'laporan_tickets.xlsx');
 
-        // Membersihkan output buffer
-        ob_clean();
-        flush();
+    //     // Membersihkan output buffer
+    //     ob_clean();
+    //     flush();
 
-        // Buat spreadsheet baru
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
+    //     // Buat spreadsheet baru
+    //     $spreadsheet = new Spreadsheet();
+    //     $sheet = $spreadsheet->getActiveSheet();
 
-        // Set header
-        $sheet->setCellValue('A1', 'No Ticket');
-        $sheet->setCellValue('B1', 'Layanan');
-        $sheet->setCellValue('C1', 'Id Pelanggan');
-        $sheet->setCellValue('D1', 'Problem Summary');
-        $sheet->setCellValue('E1', 'Extra Description');
-        $sheet->setCellValue('F1', 'Report Date');
-        $sheet->setCellValue('G1', 'Status');
-        $sheet->setCellValue('H1', 'Pending Clock');
-        $sheet->setCellValue('I1', 'SLA');
-        $sheet->setCellValue('J1', 'Closed Date');
-        $sheet->setCellValue('K1', 'Evidence Path');  // Menambahkan header kolom untuk bukti
+    //     // Set header
+    //     $sheet->setCellValue('A1', 'No Ticket');
+    //     $sheet->setCellValue('B1', 'Layanan');
+    //     $sheet->setCellValue('C1', 'Id Pelanggan');
+    //     $sheet->setCellValue('D1', 'Problem Summary');
+    //     $sheet->setCellValue('E1', 'Extra Description');
+    //     $sheet->setCellValue('F1', 'Report Date');
+    //     $sheet->setCellValue('G1', 'Status');
+    //     $sheet->setCellValue('H1', 'Pending Clock');
+    //     $sheet->setCellValue('I1', 'SLA');
+    //     $sheet->setCellValue('J1', 'Closed Date');
+    //     $sheet->setCellValue('K1', 'Evidence Path');  // Menambahkan header kolom untuk bukti
 
 
-        // Ambil data dari model Ticket
-        $tickets = Ticket::all();
+    //     // Ambil data dari model Ticket
+    //     $tickets = Ticket::all();
 
-        // Menambahkan data ke spreadsheet
-        $row = 2; // Mulai dari baris kedua
-        foreach ($tickets as $ticket) {
-            $sheet->setCellValue('A' . $row, $ticket->ticket_number);
-            $sheet->setCellValue('B' . $row, $ticket->service);
-            $sheet->setCellValue('C' . $row, $ticket->customer->composite_data);
-            $sheet->setCellValue('D' . $row, $ticket->problem_summary);
-            $sheet->setCellValue('E' . $row, $ticket->extra_description);
-            $sheet->setCellValue('F' . $row, $ticket->report_date);
-            $sheet->setCellValue('G' . $row, $ticket->status);
-            $sheet->setCellValue('H' . $row, $ticket->pending_clock);
-            $sheet->setCellValue('I' . $row, $ticket->sla->name);
-            $sheet->setCellValue('J' . $row, $ticket->closed_date);
-            // Menambahkan path bukti (file path) ke kolom baru
-            $sheet->setCellValue('K' . $row, $ticket->evidance_path);  // Path bukti
+    //     // Menambahkan data ke spreadsheet
+    //     $row = 2; // Mulai dari baris kedua
+    //     foreach ($tickets as $ticket) {
+    //         $sheet->setCellValue('A' . $row, $ticket->ticket_number);
+    //         $sheet->setCellValue('B' . $row, $ticket->service);
+    //         $sheet->setCellValue('C' . $row, $ticket->customer->composite_data);
+    //         $sheet->setCellValue('D' . $row, $ticket->problem_summary);
+    //         $sheet->setCellValue('E' . $row, $ticket->extra_description);
+    //         $sheet->setCellValue('F' . $row, $ticket->report_date);
+    //         $sheet->setCellValue('G' . $row, $ticket->status);
+    //         $sheet->setCellValue('H' . $row, $ticket->pending_clock);
+    //         $sheet->setCellValue('I' . $row, $ticket->sla->name);
+    //         $sheet->setCellValue('J' . $row, $ticket->closed_date);
+    //         // Menambahkan path bukti (file path) ke kolom baru
+    //         $sheet->setCellValue('K' . $row, $ticket->evidance_path);  // Path bukti
     
-            $row++;
-        }
+    //         $row++;
+    //     }
 
-        // Mengatur header untuk download
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="laporan_tickets.xlsx"');
-        header('Cache-Control: max-age=0');
+    //     // Mengatur header untuk download
+    //     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    //     header('Content-Disposition: attachment; filename="laporan_tickets.xlsx"');
+    //     header('Cache-Control: max-age=0');
 
-        // Buat writer dan simpan file
-        $writer = new Xlsx($spreadsheet);
-        $writer->save('php://output');
-        exit;
-    }
+    //     // Buat writer dan simpan file
+    //     $writer = new Xlsx($spreadsheet);
+    //     $writer->save('php://output');
+    //     exit;
+    // }
 
     public static function getRelations(): array
     {

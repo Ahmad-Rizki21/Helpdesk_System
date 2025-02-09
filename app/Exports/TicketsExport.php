@@ -5,46 +5,16 @@ namespace App\Exports;
 use App\Models\Ticket;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class TicketsExport implements FromCollection, WithHeadings
+class TicketsExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
 {
     public function collection()
     {
-        // Ambil semua tiket dan sertakan relasi customer
-        return Ticket::with('customer')->get()->map(function ($ticket) {
-            return [
-                $ticket->ticket_number,
-                $ticket->service,
-                $ticket->customer->composite_data, // Ambil composite_data dari relasi customer
-                $ticket->problem_summary,
-                $ticket->extra_description,
-                $ticket->report_date,
-                $ticket->status,
-                $ticket->pending_clock,
-                $ticket->closed_date,
-                $ticket->file_path, // Ambil file_path dari relasi evidance
-            ];
-        });
-    }
-
-    
-
-    public function columnWidths(): array
-    {
-        return [
-            'A' => 20, // Lebar kolom untuk No Ticket
-            'B' => 30, // Lebar kolom untuk Layanan
-            'C' => 25, // Lebar kolom untuk Id Pelanggan
-            'D' => 40, // Lebar kolom untuk Problem Summary
-            'E' => 40, // Lebar kolom untuk Extra Description
-            'F' => 20, // Lebar kolom untuk Report Date
-            'G' => 15, // Lebar kolom untuk Status
-            'H' => 20, // Lebar kolom untuk Pending Clock
-            'I' => 20, // Lebar kolom untuk Closed Date
-            'J' => 40, // Lebar kolom untuk Evidence Path
-        ];
+        return Ticket::with(['customer', 'createdBy'])->get();
     }
 
     public function headings(): array
@@ -59,36 +29,40 @@ class TicketsExport implements FromCollection, WithHeadings
             'Status',
             'Pending Clock',
             'Closed Date',
-            'Evidence Path',
+            'Created By',
         ];
     }
 
-
-    public function registerEvents(): array
+    public function map($ticket): array
     {
         return [
-            AfterSheet::class => function (AfterSheet $event) {
-                // Ambil data tiket
-                $tickets = Ticket::all();
-                $row = 2; // Mulai dari baris kedua
-
-                foreach ($tickets as $ticket) {
-                    $evidancePath = $ticket->evidance_path;
-
-                    // Jika ada bukti (gambar/file), tambahkan gambar ke Excel
-                    if ($evidancePath && file_exists(public_path('storage/' . $evidancePath))) {
-                        $drawing = new Drawing();
-                        $drawing->setName('Evidence Image');
-                        $drawing->setDescription('Evidence Image');
-                        $drawing->setPath(public_path('storage/' . $evidancePath)); // Path gambar
-                        $drawing->setHeight(150); // Tentukan tinggi gambar
-                        $drawing->setCoordinates('J' . $row); // Tentukan posisi gambar di kolom 'J'
-                        $drawing->setWorksheet($event->sheet->getDelegate());
-                    }
-                    $row++;
-                }
-            },
+            $ticket->ticket_number,
+            $ticket->service,
+            $ticket->customer->composite_data ?? 'No Data',
+            $ticket->problem_summary,
+            $ticket->extra_description,
+            $ticket->report_date,
+            $ticket->status,
+            $ticket->pending_clock,
+            $ticket->closed_date,
+            optional($ticket->createdBy)->name ?? 'Unknown',
         ];
     }
 
+    public function styles(Worksheet $sheet)
+    {
+        return [
+            1    => ['font' => ['bold' => true]], // Header dibuat bold
+            'A'  => ['alignment' => ['horizontal' => 'left']],  // No Ticket rata kiri
+            'B'  => ['alignment' => ['horizontal' => 'left']],  // Layanan rata kiri
+            'C'  => ['alignment' => ['horizontal' => 'left']],  // Id Pelanggan rata kiri
+            'D'  => ['alignment' => ['horizontal' => 'left']],  // Problem Summary rata kiri
+            'E'  => ['alignment' => ['horizontal' => 'center']], // Extra Description rata tengah
+            'F'  => ['alignment' => ['horizontal' => 'center']], // Report Date rata tengah
+            'G'  => ['alignment' => ['horizontal' => 'center']], // Status rata tengah
+            'H'  => ['alignment' => ['horizontal' => 'center']], // Pending Clock rata tengah
+            'I'  => ['alignment' => ['horizontal' => 'center']], // Closed Date rata tengah
+            'J'  => ['alignment' => ['horizontal' => 'left']],  // Created By rata kiri
+        ];
+    }
 }
