@@ -23,8 +23,20 @@ use App\Filament\Resources\LogActivityResource;
 use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 
+
+use Filament\Facades\Filament;
+use Filament\Forms\Components\View;
+use Filament\Forms\Form;
+use Filament\Pages\Auth\Login;
+
+
 class AdminPanelProvider extends PanelProvider
 {
+
+    
+        
+
+
     public function panel(Panel $panel): Panel
     {
         return $panel->default()
@@ -36,10 +48,14 @@ class AdminPanelProvider extends PanelProvider
                 
             ])
 
-             // 🔹 Tambahkan Branding (Logo & Nama)
-            //  ->brandLogo(asset('images/logo.svg')) // Sesuaikan path logo
-             ->brandLogoHeight('40px') // Sesuaikan ukuran logo
-             ->brandName('FTTH JELANTIK HELPDESK')
+            
+             //🔹 Tambahkan Branding (Logo & Nama)
+            //  ->brandLogo(asset('images/Capture-removebg-preview.png')) // ✅ Logo lebih besar
+            // ->brandLogoHeight('60px') // ✅ Tinggi logo lebih besar
+            ->brandName('FTTH JELANTIK HELPDESK') // ✅ Pastikan nama tetap ada
+            ->resources([
+                TicketResource::class,
+            ])
             
             
 

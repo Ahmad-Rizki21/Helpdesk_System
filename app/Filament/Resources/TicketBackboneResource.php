@@ -74,10 +74,23 @@ class TicketBackboneResource extends Resource
                 ->required()
                 ->disabled(), // Supaya tidak bisa diubah manual
 
-            Textarea::make('extra_description')
+                // Forms\Components\Textarea::make('extra_description')
+                // ->label('Extra Description')
+                // ->placeholder('Masukkan deskripsi tambahan di sini...')
+                // ->rows(4)
+                // ->default(fn ($get) => $get('status') === 'OPEN' ? 'Belum Ada Deskripsi Tambahan' : null)
+                // ->disabled(fn ($get) => $get('status') !== 'PENDING')
+                // ->required(),
+                Forms\Components\Textarea::make('extra_description')
                 ->label('Extra Description')
-                ->rows(3)
-                ->disabled(fn ($get) => $get('status') !== 'PENDING'),
+                ->placeholder('Masukkan deskripsi tambahan di sini...')
+                ->rows(4)
+                ->default(null) // Default kosong, bukan "Belum Ada Deskripsi Tambahan"
+                ->disabled(fn ($get) => $get('status') === 'OPEN') // Disable saat OPEN
+                ->live(),
+
+
+                
 
             Select::make('status')
                 ->label('Status')
@@ -127,11 +140,14 @@ class TicketBackboneResource extends Resource
                 'cid'         => optional($ticket->cidRelation)->cid ?? 'N/A',
                 'jenis_isp'   => $ticket->jenis_isp,
                 'lokasi'      => TicketBackbone::lokasiList()[$ticket->lokasi_id] ?? 'N/A',
+                'extra_description' => $ticket->extra_description,
                 'status'      => $ticket->status,
                 'open_date'   => $ticket->open_date?->format('d-m-Y H:i') ?? 'N/A',
                 'pending_date'=> $ticket->pending_date?->format('d-m-Y H:i') ?? 'Belum ada Pending',
                 'closed_date' => $ticket->closed_date?->format('d-m-Y H:i') ?? 'Belum ada Ticket Closed',
                 'created_by'  => optional($ticket->creator)->name ?? 'Unknown',
+                'created_at' => $ticket->created_at ?? null,  // Pastikan ada
+                'updated_at' => $ticket->updated_at ?? null,  // Pastikan ada
             ];
         });
 
@@ -161,6 +177,13 @@ class TicketBackboneResource extends Resource
                 ->sortable()
                 ->searchable(),
 
+                Tables\Columns\TextColumn::make('extra_description')
+    ->label('Extra Description')
+    ->formatStateUsing(fn ($state) => $state && trim($state) !== '' ? $state : 'Belum Ada Deskripsi Tambahan')
+    ->limit(50)
+    ->sortable()
+    ->searchable(),
+
                 TextColumn::make('status')
                 ->badge()
                 ->sortable()
@@ -177,17 +200,28 @@ class TicketBackboneResource extends Resource
                 ->sortable(),
 
                 TextColumn::make('pending_date_formatted')
-    ->label('Pending Date')
-    ->sortable(),
+                ->label('Pending Date')
+                ->sortable(),
 
-TextColumn::make('closed_date_formatted')
-    ->label('Closed Date')
-    ->sortable(),
+            TextColumn::make('closed_date_formatted')
+            ->label('Closed Date')
+            ->sortable(),
 
-    TextColumn::make('creator.name')
-    ->label('Created By')
-    ->sortable()
-    ->searchable(),
+            Tables\Columns\TextColumn::make('created_at')
+            ->label('Created At')
+            ->dateTime('Y-m-d H:i:s') // Format sesuai dengan database
+            ->sortable(),
+
+            Tables\Columns\TextColumn::make('updated_at')
+                ->label('Updated At')
+                ->dateTime('Y-m-d H:i:s')
+                ->sortable(),
+
+
+                TextColumn::make('creator.name')
+                ->label('Created By')
+                ->sortable()
+                ->searchable(),
             
             
             

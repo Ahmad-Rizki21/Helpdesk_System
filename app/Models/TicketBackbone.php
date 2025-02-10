@@ -100,6 +100,11 @@ class TicketBackbone extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function getExtraDescriptionAttribute($value)
+{
+    return $value ?: 'Belum Ada Deskripsi Tambahan';
+}
+
   
 
     public static function lokasiList()

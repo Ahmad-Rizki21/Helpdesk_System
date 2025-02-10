@@ -95,6 +95,16 @@ class TicketResource extends Resource
                 ->relationship('sla', 'name')
                 ->required(),
 
+            Forms\Components\DateTimePicker::make('created_at')
+            ->label('Created At')
+            ->disabled(),
+            // ->hidden(),
+
+            Forms\Components\DateTimePicker::make('updated_at')
+            ->label('Updated At')
+            ->disabled(),
+            // ->hidden(),
+
                 Forms\Components\Hidden::make('created_by')
                 ->default(fn () => Auth::user()->id) // Simpan user yang sedang login
                 ->disabled(),
@@ -128,6 +138,18 @@ class TicketResource extends Resource
                     default => 'gray',
                 })->searchable(),
                 Tables\Columns\TextColumn::make('closed_date')->label('Closed Date')->searchable(),
+                
+                Tables\Columns\TextColumn::make('created_at')
+                ->label('Created At')
+                ->dateTime()
+                ->sortable(),
+
+            Tables\Columns\TextColumn::make('updated_at')
+                ->label('Updated At')
+                ->dateTime()
+                ->sortable(),
+                
+                
                 Tables\Columns\TextColumn::make('creator.name')
                 ->label('Created By')
                 ->sortable()

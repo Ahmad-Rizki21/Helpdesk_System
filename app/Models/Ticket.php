@@ -27,6 +27,7 @@ class Ticket extends Model
         'evidance_path',
         'created_by',  // Pastikan created_by diisi dengan ID user yang sedang login
 
+
     ];
 
     public function customer()
@@ -64,6 +65,12 @@ class Ticket extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    // Relasi ke User (Created By)
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by'); 
     }
 
     public function getPendingClockAttribute($value)

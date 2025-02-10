@@ -45,7 +45,11 @@ class UserResource extends Resource
                     ->options([
                         'Admin' => 'Admin',
                         'Helpdesk' => 'Helpdesk',
-                    ]),
+                        
+                    ])
+                    ->default('helpdesk') // Set default role
+                     ->searchable(), // Tambahkan pencarian jika opsi banyak
+                    
             ]);
     }
 
